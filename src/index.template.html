@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= htmlWebpackPlugin.options.productName %></title>
+
+    <meta charset="utf-8">
+    <meta name="description" content="<%= htmlWebpackPlugin.options.productDescription %>">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width<% if (htmlWebpackPlugin.options.ctx.mode.cordova) { %>, viewport-fit=cover<% } %>">
+
+    <link rel="icon" href="statics/quasar-logo.png" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="statics/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="statics/icons/favicon-16x16.png">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <style>
+      body{
+
+        font-family: 'Montserrat', sans-serif!important;
+      }
+      #elmenu .q-item {
+        margin-bottom: 10px;
+        background: #3c3c3c;
+      }
+      .q-layout-drawer{
+        background: #373737!important;
+        color: #f2f2f2!important;
+      }
+      #elmenu .q-item.active, #elmenu .q-item.router-link-active, #elmenu .q-item:focus {
+        background: #f2f2f2!important;
+       border-left: 5px solid #c571aa;
+       color: #373737!important;
+      }
+      .q-toolbar {
+        color: red!important;
+      background: #f3f3f3!important;
+      }
+      </style>
+  </head>
+  <body>
+    <!-- DO NOT touch the following DIV -->
+    <div id="q-app"></div>
+  </body>
+</html>
