@@ -24,13 +24,13 @@
         inset-delimiter
         id="elmenu"
       >
-        <q-list-header>Aquí va el logo</q-list-header>
+        <q-list-header> <img :src="imageSrc"></q-list-header>
         <q-item to="/usuarios">
           <q-item-side icon="person" />
           <q-item-main label="Usuarios" />
         </q-item>
         <q-item to="/urbanizaciones">
-          <q-item-side icon="person" />
+          <q-item-side icon="map" />
           <q-item-main label="Urbanizaciones" />
         </q-item>
       </q-list>
@@ -49,7 +49,8 @@ export default {
   name: 'MyLayout',
   data () {
     return {
-      leftDrawerOpen: this.$q.platform.is.desktop
+      leftDrawerOpen: this.$q.platform.is.desktop,
+      imageSrc: './assets/logoimo.png'
     }
   },
   methods: {

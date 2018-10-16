@@ -1,5 +1,6 @@
 <template>
   <q-page padding>
+    <div v-if="loading"></div>
     <q-btn
       icon-right="add"
       color="teal"
@@ -7,6 +8,7 @@
       @click="toggleModal"
       size="lg"
       rounded
+      class="form-row"
     />
     <q-modal v-model="opened" :content-css="{minWidth: '80vw', minHeight: '80vh'}">
       <q-modal-layout>
@@ -21,44 +23,64 @@
         </q-toolbar>
         <div class="layout-padding">
           <h3>Agregar Urbanización</h3>
-          <div class="row gutter-md">
+          <div class="row gutter-md form-row">
             <div class="col-xs-12 col-sm-6 col-md-4">
-              <q-input v-model="text" float-label="Nombre" placeholder="Agregar nombre de urbanización, edificio, conjunto, etc..."  />
-              </div>
+              <q-field
+                :error="$v.form.nombre.$error"
+                error-label="Este campo es obligatorio"
+              >
+                <q-input v-model="form.nombre" float-label="Nombre" placeholder="Agregar nombre de urbanización, edificio, conjunto, etc..."  />
+              </q-field>
+            </div>
             <div class="col-xs-12 col-sm-6 col-md-4">
-              <q-input v-model="area"
+              <q-field
+                :error="$v.form.direccion.$error"
+                error-label="Este campo es obligatorio"
+              >
+                <q-input v-model="form.direccion"
                 type="textarea"
                 :max-height="100"
                 float-label="Dirección"
                 placeholder="Agregar dirección..."  />
+              </q-field>
             </div>
             <div class="col-xs-12 col-sm-6 col-md-4">
-              <q-input v-model="text" float-label="Teléfono" placeholder="Agregar el número de teléfono..."  />
+              <q-field
+                :error="$v.form.telefono.$error"
+                error-label="Este campo es obligatorio"
+              >
+                <q-input v-model="form.telefono" float-label="Teléfono" placeholder="Agregar el número de teléfono..."  />
+              </q-field>
             </div>
           </div>
-          <div class="row gutter-md">
+          <div class="row gutter-md form-row">
             <div class="col-xs-12 col-sm-6 col-md-4">
               <q-select
                 float-label="Seleccione usuario"
-                v-model="select"
+                v-model="form.usuarios"
                 :options="selectOptions"
               />
+            </div>
+            <div class="col-xs-12 col-sm-6 col-md-4">
+              <q-uploader ref="uploader" float-label="Subir imagen" :url="uploadurl" />
             </div>
           </div>
           <q-btn
             color="light"
             v-close-overlay
             label="Cancelar"
+            class="float-right  on-right"
           />
           <q-btn
+            @click="putUrbanizaciones()"
             color="positive"
-            v-close-overlay
             label="Agregar"
+             class="float-right"
           />
         </div>
       </q-modal-layout>
     </q-modal>
-    <div v-if="loading">{{respuesta}}</div>
+    <div v-if="loading"></div>
     <q-table
     title="Urbaizaciones"
     :data="urbanizaciones"
@@ -71,7 +93,7 @@
         </q-td>
       </q-tr>
     </q-table>
-     <q-inner-loading :visible="loading">
+    <q-inner-loading :visible="loading">
       <q-spinner-gears size="50px" color="primary"></q-spinner-gears>
     </q-inner-loading>
   </q-page>
@@ -79,10 +101,19 @@
 
 <script>
 import axios from 'axios'
-// import { required, email } from 'vuelidate/lib/validators'
+// import uuidv5 from 'uuid/v5'
+import { required } from 'vuelidate/lib/validators'
 export default {
   data () {
     return {
+      uploadurl: '',
+      form: {
+        nombre: '',
+        telefono: '',
+        direccion: '',
+        usuarios: '',
+        imagen: ''
+      },
       selectOptions: [],
       opened: false,
       columns: [
@@ -93,8 +124,7 @@ export default {
           align: 'left',
           field: 'name',
           sortable: true,
-          classes: 'my-class',
-          style: 'width: 200px'
+          classes: 'my-class'
         },
         {
           name: 'address',
@@ -103,8 +133,7 @@ export default {
           align: 'left',
           field: 'address',
           sortable: true,
-          classes: 'my-class',
-          style: 'width: 200px'
+          classes: 'my-class'
         },
         {
           name: 'phone',
@@ -113,8 +142,7 @@ export default {
           align: 'left',
           field: 'phone',
           sortable: true,
-          classes: 'my-class',
-          style: 'width: 200px'
+          classes: 'my-class'
         },
         {
           name: 'urlImage',
@@ -123,8 +151,16 @@ export default {
           align: 'left',
           field: 'urlImage',
           sortable: true,
-          classes: 'my-class',
-          style: 'width: 200px'
+          classes: 'my-class'
+        },
+        {
+          name: 'idUser',
+          required: true,
+          label: 'Id Usuario',
+          align: 'left',
+          field: 'idUser',
+          sortable: true,
+          classes: 'my-class'
         }
       ],
       urbanizaciones: [],
@@ -135,14 +171,13 @@ export default {
   },
   methods: {
     createSelectOptions () {
-      axios.get('https://my.api.mockaroo.com/urbanizaciones.json?key=429a6dc0')
+    //  axios.get('https://my.api.mockaroo.com/urbanizaciones.json?key=429a6dc0')
+      axios.get('http://localhost:3000/users?_page=1&_limit=20')
         .then((response) => {
-          console.log(response)
           this.users = response.data
           this.users.forEach(element => {
-            console.log('element' + element)
             let objeto = {
-              'label': element.name,
+              'label': element.first_name + ' ' + element.last_name,
               'value': element.id
             }
             this.selectOptions.push(objeto)
@@ -164,7 +199,7 @@ export default {
         'Content-Type': 'application/json'
       }
       this.loading = true
-      axios.get('https://my.api.mockaroo.com/urbanizaciones.json?key=429a6dc0', headers)
+      axios.get('http://localhost:3000/urbanizaciones', headers)
         .then((response) => {
           this.loading = false
           console.log(response)
@@ -172,19 +207,72 @@ export default {
         }, (error) => {
           if (error) {
             console.log(error)
-            this.loading = true
+            this.loading = false
             this.respuesta = error
           }
         })
+    },
+    putUrbanizaciones: function () {
+      this.$v.form.$touch()
+      if (!this.$v.form.$error) {
+        var headers = {
+          'Content-Type': 'application/json'
+        }
+        let user = ''
+        /* let urbId = uuidv5('imobation.com', uuidv5.DNS)
+        console.log(urbId) */
+        if (!this.form.usuarios) {
+          user = 0
+        } else {
+          user = this.form.usuarios
+        }
+        // make object
+        let objeto = {
+          'idUser': user,
+          'name': this.form.nombre,
+          'address': this.form.direccion,
+          'phone': this.form.telefono,
+          'urlImage': 'http://dummyimage.com/110x182.jpg/5fa2dd/ffffff'
+        }
+        console.log(objeto)
+        this.loading = true
+        axios.post('http://localhost:3000/urbanizaciones', objeto, headers)
+          .then((response) => {
+            this.loading = false
+            console.log(response)
+            this.getUrbanizaciones()
+            this.resetForm()
+            this.opened = false
+          }, (error) => {
+            if (error) {
+              console.log(error)
+              this.loading = false
+              this.respuesta = error
+            }
+          })
+      }
+    },
+    resetForm () {
+      this.uploadurl = ''
+      this.form.nombre = ''
+      this.form.telefono = ''
+      this.form.direccion = ''
+      this.form.usuarios = ''
+      this.form.imagen = ''
     }
   },
+
   beforeMount () {
     this.getUrbanizaciones()
     this.createSelectOptions()
+  },
+  validations: {
+    form: {
+      nombre: { required },
+      telefono: { required },
+      direccion: { required }
+    }
   }
-  /* validations: {
-    email: { required, email }
-  } */
 }
 </script>
 
