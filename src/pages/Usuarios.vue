@@ -22,7 +22,7 @@
           />
         </q-toolbar>
         <div class="layout-padding">
-          <h3>Agregar Usuario</h3>
+          <h3>{{form.actionName}} Usuario</h3>
           <div class="row gutter-md form-row">
             <div class="col-xs-12 col-sm-6 col-md-4">
               <q-field
@@ -63,8 +63,8 @@
           <q-btn
             @click="addUser()"
             color="positive"
-            label="Agregar"
-             class="float-right"
+            :label="form.actionName"
+            class="float-right"
           />
         </div>
       </q-modal-layout>
@@ -76,8 +76,20 @@
     row-key="name"
     >
       <q-tr slot="body" slot-scope="props" :props="props" @click.native="rowClick(props.row)" class="cursor-pointer">
-        <q-td v-for="col in props.cols" :key="col.name" :props="props">
-          {{ col.value }}
+        <q-td key="first_name" :props="props">{{ props.row.first_name }}</q-td>
+        <q-td key="last_name" :props="props">{{ props.row.last_name }}</q-td>
+        <q-td key="email" :props="props">{{ props.row.email }}</q-td>
+        <q-td key="col-actions" :props="props">
+          <q-btn @click='open_edit_modal(props.row)' size="sm"><q-icon name="edit" /></q-btn>
+          <q-btn @click='open_urbanizacion(props.row.id)' class="on-right" size="sm" label="Ver urbanizaciones"> <q-icon name="expand_more" class="on-right" />
+           <q-popover>
+            <q-list>
+              <q-item v-close-overlay v-for="urbanizacion in currentUserUrbs" :key="urbanizacion.id">
+                 {{urbanizacion.name}}
+              </q-item>
+            </q-list>
+          </q-popover>
+          </q-btn>
         </q-td>
       </q-tr>
     </q-table>
@@ -93,10 +105,12 @@ import { required, email } from 'vuelidate/lib/validators'
 export default {
   data () {
     return {
+      currentUserUrbs: [],
       form: {
         first_name: '',
         last_name: '',
-        email: ''
+        email: '',
+        actionName: 'Agregar'
       },
       opened: false,
       columns: [
@@ -129,6 +143,13 @@ export default {
           sortable: true,
           classes: 'my-class',
           style: 'width: 200px'
+        },
+        {
+          name: 'col-actions',
+          required: true,
+          label: 'Acciones',
+          align: 'left',
+          classes: 'my-class'
         }
       ],
       users: [],
@@ -144,10 +165,36 @@ export default {
     }
   },
   methods: {
+    open_edit_modal (data) {
+      this.opened = true
+      this.form.email = data.email
+      this.form.first_name = data.first_name
+      this.form.last_name = data.last_name
+      this.form.actionName = 'Editar'
+    },
+    open_urbanizacion (userId) {
+      var headers = {
+        'Content-Type': 'application/json'
+      }
+      this.loading = true
+      axios.get('http://localhost:3000/urbanizaciones?idUser=' + userId, headers)
+        .then((response) => {
+          this.loading = false
+          console.log(response)
+          this.currentUserUrbs = response.data
+        }, (error) => {
+          if (error) {
+            console.log(error)
+            this.loading = false
+            // this.respuesta = error
+          }
+        })
+    },
     rowClick (val) {
       console.log('clickiti' + val)
     },
     toggleModal () {
+      this.resetForm()
       this.opened = !this.opened
     },
     getUsers: function () {

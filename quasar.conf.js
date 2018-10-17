@@ -6,7 +6,8 @@ module.exports = function (ctx) {
     plugins: [
       'i18n',
       'axios',
-      'vuelidate'
+      'vuelidate',
+      'lodash'
     ],
     css: [
       'app.styl'
@@ -70,7 +71,9 @@ module.exports = function (ctx) {
         'QSpinnerGears',
         'QUploader',
         'QModalLayout',
-        'QField'
+        'QField',
+        'QPopover',
+        'QToggle'
       ],
       directives: [
         'Ripple',

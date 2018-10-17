@@ -33,6 +33,14 @@
           <q-item-side icon="map" />
           <q-item-main label="Urbanizaciones" />
         </q-item>
+        <q-item to="/viviendas">
+          <q-item-side icon="domain" />
+          <q-item-main label="Viviendas" />
+        </q-item>
+        <q-item to="/sectores">
+          <q-item-side icon="location_on" />
+          <q-item-main label="Sectores" />
+        </q-item>
       </q-list>
     </q-layout-drawer>
 

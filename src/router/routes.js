@@ -1,6 +1,8 @@
 
 import Urbanizaciones from 'pages/Urbanizaciones'
 import Usuarios from 'pages/Usuarios'
+import Sectores from 'pages/Sectores'
+import Viviendas from 'pages/Viviendas'
 const routes = [
   {
     path: '/',
@@ -13,6 +15,14 @@ const routes = [
       {
         path: '/usuarios', // here it is, route /user/profile
         component: Usuarios // we reference /src/pages/Profile.vue imported above
+      },
+      {
+        path: '/sectores', // here it is, route /user/profile
+        component: Sectores // we reference /src/pages/Profile.vue imported above
+      },
+      {
+        path: '/viviendas', // here it is, route /user/profile
+        component: Viviendas // we reference /src/pages/Profile.vue imported above
       },
       { path: '', component: () => import('pages/Index.vue') }
     ]

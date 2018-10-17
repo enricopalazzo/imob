@@ -22,14 +22,14 @@
           />
         </q-toolbar>
         <div class="layout-padding">
-          <h3>Agregar Urbanización</h3>
+          <h3>{{form.actionName}} Urbanización</h3>
           <div class="row gutter-md form-row">
             <div class="col-xs-12 col-sm-6 col-md-4">
               <q-field
                 :error="$v.form.nombre.$error"
                 error-label="Este campo es obligatorio"
               >
-                <q-input v-model="form.nombre" float-label="Nombre" placeholder="Agregar nombre de urbanización, edificio, conjunto, etc..."  />
+                <q-input v-model="form.nombre" float-label="Nombre *" placeholder="Agregar nombre de urbanización, edificio, conjunto, etc..."  />
               </q-field>
             </div>
             <div class="col-xs-12 col-sm-6 col-md-4">
@@ -40,7 +40,7 @@
                 <q-input v-model="form.direccion"
                 type="textarea"
                 :max-height="100"
-                float-label="Dirección"
+                float-label="Dirección *"
                 placeholder="Agregar dirección..."  />
               </q-field>
             </div>
@@ -74,7 +74,7 @@
           <q-btn
             @click="putUrbanizaciones()"
             color="positive"
-            label="Agregar"
+            :label="form.actionName"
              class="float-right"
           />
         </div>
@@ -88,9 +88,12 @@
     row-key="id"
     >
       <q-tr slot="body" slot-scope="props" :props="props" @click.native="rowClick(props.row.key)" class="cursor-pointer">
-        <q-td v-for="col in props.cols" :key="col.name" :props="props">
-          {{ col.value }}
-        </q-td>
+         <q-td key="name" :props="props">{{ props.row.name }}</q-td>
+         <q-td key="address" :props="props">{{ props.row.address }}</q-td>
+         <q-td key="phone" :props="props">{{ props.row.phone }}</q-td>
+         <q-td key="urlImage" :props="props">{{ props.row.urlImage }}</q-td>
+         <q-td key="idUser" :props="props">mapUserId({{ props.row.idUser }})</q-td>
+        <q-td key="col-actions" :props="props"><q-btn @click='open_edit_modal(props.row)'><q-icon name="edit" /></q-btn></q-td>
       </q-tr>
     </q-table>
     <q-inner-loading :visible="loading">
@@ -101,18 +104,21 @@
 
 <script>
 import axios from 'axios'
+// import _ from 'lodash'
 // import uuidv5 from 'uuid/v5'
 import { required } from 'vuelidate/lib/validators'
 export default {
   data () {
     return {
+      currentUserId: 3,
       uploadurl: '',
       form: {
         nombre: '',
         telefono: '',
         direccion: '',
         usuarios: '',
-        imagen: ''
+        imagen: '',
+        actionName: 'Agregar'
       },
       selectOptions: [],
       opened: false,
@@ -161,6 +167,13 @@ export default {
           field: 'idUser',
           sortable: true,
           classes: 'my-class'
+        },
+        {
+          name: 'col-actions',
+          required: true,
+          label: 'Acciones',
+          align: 'left',
+          classes: 'my-class'
         }
       ],
       urbanizaciones: [],
@@ -170,8 +183,17 @@ export default {
     }
   },
   methods: {
-    createSelectOptions () {
-    //  axios.get('https://my.api.mockaroo.com/urbanizaciones.json?key=429a6dc0')
+    open_edit_modal (data) {
+      this.opened = true
+      this.form.usuarios = data.idUser
+      this.form.nombre = data.name
+      this.form.direccion = data.address
+      this.form.telefono = data.phone
+      this.form.urlImage = data.urlImage
+      console.log(data)
+      this.form.actionName = 'Editar'
+    },
+    getUsers () {
       axios.get('http://localhost:3000/users?_page=1&_limit=20')
         .then((response) => {
           this.users = response.data
@@ -189,17 +211,23 @@ export default {
         })
     },
     toggleModal () {
+      this.resetForm()
       this.opened = !this.opened
     },
     rowClick (val) {
       console.log('clickiti' + val)
     },
     getUrbanizaciones: function () {
+      var getUrl = 'http://localhost:3000/urbanizaciones'
+      if (this.currentUserId !== 0) {
+        getUrl += '?idUser=' + this.currentUserId
+      }
+      // axios.get('http://localhost:3000/urbanizaciones?idUser=' + this.currentUserId, headers)
       var headers = {
         'Content-Type': 'application/json'
       }
       this.loading = true
-      axios.get('http://localhost:3000/urbanizaciones', headers)
+      axios.get(getUrl, headers)
         .then((response) => {
           this.loading = false
           console.log(response)
@@ -263,8 +291,10 @@ export default {
   },
 
   beforeMount () {
+    /* esto debería del vuex state */
     this.getUrbanizaciones()
-    this.createSelectOptions()
+    this.getUsers()
+    // this.createSelectOptions()
   },
   validations: {
     form: {
