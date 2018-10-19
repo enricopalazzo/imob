@@ -1,3 +1,8 @@
+
 export default {
-  currentUser: 3
+  lasViviendas: [],
+  currentUser: {
+    'id': 3,
+    'rol': 2
+  }
 }

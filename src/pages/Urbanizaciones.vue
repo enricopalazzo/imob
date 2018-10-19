@@ -1,7 +1,7 @@
 <template>
   <q-page padding>
     <div v-if="loading"></div>
-    <q-btn
+    <q-btn v-if="currentUser.rol===1"
       icon-right="add"
       color="teal"
       label="Agregar Urbanización"
@@ -108,6 +108,13 @@ import axios from 'axios'
 // import uuidv5 from 'uuid/v5'
 import { required } from 'vuelidate/lib/validators'
 export default {
+  computed: {
+    currentUser: {
+      get () {
+        return this.$store.state.mainstore.currentUser
+      }
+    }
+  },
   data () {
     return {
       currentUserId: 3,
@@ -219,8 +226,8 @@ export default {
     },
     getUrbanizaciones: function () {
       var getUrl = 'http://localhost:3000/urbanizaciones'
-      if (this.currentUserId !== 0) {
-        getUrl += '?idUser=' + this.currentUserId
+      if (this.currentUser.rol === 2) {
+        getUrl += '?idUser=' + this.currentUser.id
       }
       // axios.get('http://localhost:3000/urbanizaciones?idUser=' + this.currentUserId, headers)
       var headers = {
